@@ -10,6 +10,7 @@ const resources = {
       addToCart: "INSERT COIN",
       price: "$29.99",
       description: "Premium quality t-shirt featuring exclusive retro arcade design. 100% cotton, screen-printed graphics.",
+      brandName: "MORSH-D",
       features: {
         quality: "Premium Cotton",
         design: "Exclusive Design",
@@ -24,25 +25,26 @@ const resources = {
       }
     }
   },
-  es: {
+  ar: {
     translation: {
-      title: "EDICIÓN ARCADE",
-      subtitle: "COLECCIÓN RETRO GAMING",
-      selectSize: "SELECCIONAR TALLA",
-      addToCart: "INSERTAR MONEDA",
+      title: "إصدار أركيد",
+      subtitle: "مجموعة الألعاب الكلاسيكية",
+      selectSize: "اختر المقاس",
+      addToCart: "أدخل العملة",
       price: "$29.99",
-      description: "Camiseta de calidad premium con diseño exclusivo arcade retro. 100% algodón, gráficos serigrafiados.",
+      description: "قميص عالي الجودة يحتوي على تصميم أركيد حصري. 100% قطن، طباعة شاشة احترافية.",
+      brandName: "مورش-دي",
       features: {
-        quality: "Algodón Premium",
-        design: "Diseño Exclusivo",
-        comfort: "Ultra Cómoda"
+        quality: "قطن فاخر",
+        design: "تصميم حصري",
+        comfort: "مريح للغاية"
       },
       sizes: {
-        s: "PEQUEÑA",
-        m: "MEDIANA",
-        l: "GRANDE",
-        xl: "X-GRANDE",
-        xxl: "XX-GRANDE"
+        s: "صغير",
+        m: "وسط",
+        l: "كبير",
+        xl: "كبير جداً",
+        xxl: "كبير جداً جداً"
       }
     }
   }
