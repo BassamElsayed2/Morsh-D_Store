@@ -97,7 +97,7 @@ export const ArcadeProduct = () => {
       <header className="container mx-auto px-4 py-6 flex justify-between items-center relative z-10">
         <div className="flex items-center gap-2">
           <Sparkles className="w-8 h-8 text-primary" />
-          <span className="text-2xl font-bold neon-glow uppercase tracking-wider">ARCADE SHOP</span>
+          <span className="text-2xl font-bold neon-glow uppercase tracking-wider">{t('brandName')}</span>
         </div>
         <LanguageSwitcher />
       </header>
