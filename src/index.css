@@ -48,9 +48,13 @@ All colors MUST be HSL.
     --neon-yellow: 55 100% 50%;
     --arcade-bg: 270 100% 4%;
     --arcade-border: 185 100% 47%;
-    
+
     /* Gradient for effects */
-    --gradient-arcade: linear-gradient(135deg, hsl(185 100% 47% / 0.2), hsl(330 100% 50% / 0.2));
+    --gradient-arcade: linear-gradient(
+      135deg,
+      hsl(185 100% 47% / 0.2),
+      hsl(330 100% 50% / 0.2)
+    );
   }
 
   .dark {
@@ -92,12 +96,12 @@ All colors MUST be HSL.
 
   body {
     @apply bg-background text-foreground;
-    font-family: 'Courier New', monospace;
+    font-family: "Courier New", monospace;
   }
 
   /* Scanline effect */
   body::before {
-    content: '';
+    content: "";
     position: fixed;
     top: 0;
     left: 0;
@@ -117,20 +121,30 @@ All colors MUST be HSL.
 
 @layer utilities {
   .neon-glow {
-    text-shadow: 0 0 10px hsl(var(--neon-glow)), 0 0 20px hsl(var(--neon-glow)), 0 0 30px hsl(var(--neon-glow));
+    text-shadow: 0 0 10px hsl(var(--neon-glow)), 0 0 20px hsl(var(--neon-glow)),
+      0 0 30px hsl(var(--neon-glow));
   }
 
   .neon-border {
     border: 2px solid hsl(var(--arcade-border));
-    box-shadow: 0 0 10px hsl(var(--neon-glow) / 0.5), inset 0 0 10px hsl(var(--neon-glow) / 0.2);
+    box-shadow: 0 0 10px hsl(var(--neon-glow) / 0.5),
+      inset 0 0 10px hsl(var(--neon-glow) / 0.2);
   }
 
   .pixel-corners {
     clip-path: polygon(
-      0 8px, 8px 8px, 8px 0,
-      calc(100% - 8px) 0, calc(100% - 8px) 8px, 100% 8px,
-      100% calc(100% - 8px), calc(100% - 8px) calc(100% - 8px), calc(100% - 8px) 100%,
-      8px 100%, 8px calc(100% - 8px), 0 calc(100% - 8px)
+      0 8px,
+      8px 8px,
+      8px 0,
+      calc(100% - 8px) 0,
+      calc(100% - 8px) 8px,
+      100% 8px,
+      100% calc(100% - 8px),
+      calc(100% - 8px) calc(100% - 8px),
+      calc(100% - 8px) 100%,
+      8px 100%,
+      8px calc(100% - 8px),
+      0 calc(100% - 8px)
     );
   }
 
