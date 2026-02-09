@@ -4,14 +4,14 @@ import { initReactI18next } from "react-i18next";
 const resources = {
   en: {
     translation: {
-      title: "ARCADE EDITION",
-      subtitle: "RETRO GAMING COLLECTION",
+      title: "DEMENTE BLACK ZIPUP JACKET",
+      subtitle: "RETRO CLOTHING COLLECTION",
       selectSize: "SELECT SIZE",
       addToCart: "INSERT COIN",
       new: "NEW!",
-      price: "$29.99",
+      price: "1200 EGP",
       description:
-        "Premium quality t-shirt featuring exclusive retro arcade design. 100% cotton, screen-printed graphics.",
+        "Streetwear Premium zipup jacket , Slightly cropped , and boxy fit",
       brandName: "MORSH-D",
       features: {
         quality: "Premium Cotton",
@@ -19,7 +19,6 @@ const resources = {
         comfort: "Ultra Comfortable",
       },
       sizes: {
-        s: "SMALL",
         m: "MEDIUM",
         l: "LARGE",
         xl: "X-LARGE",
@@ -29,14 +28,13 @@ const resources = {
   },
   ar: {
     translation: {
-      title: "إصدار أركيد",
-      subtitle: "مجموعة الألعاب الكلاسيكية",
+      title: "جاكيت ديمينتي الأسود بسوستة",
+      subtitle: "مجموعة الملابس الكلاسيكية",
       selectSize: "اختر المقاس",
       addToCart: "أدخل العملة",
       new: "جديد!",
-      price: "$29.99",
-      description:
-        "قميص عالي الجودة يحتوي على تصميم أركيد حصري. 100% قطن، طباعة شاشة احترافية.",
+      price: "1200 ج.م",
+      description: "جاكيت ديمينتي الأسود بسوستة , مغلف , ومريح",
       brandName: "Morsh-D",
       features: {
         quality: "قطن فاخر",
@@ -44,7 +42,6 @@ const resources = {
         comfort: "مريح للغاية",
       },
       sizes: {
-        s: "S",
         m: "M",
         l: "Large",
         xl: "XL",

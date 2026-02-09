@@ -1,4 +1,4 @@
-import { createContext, useContext, useState, ReactNode } from "react";
+import { createContext, useContext, useState, useCallback, useMemo, ReactNode } from "react";
 
 export interface CartItem {
   id: string;
@@ -16,16 +16,28 @@ interface CartContextType {
   removeItem: (id: string, size: string) => void;
   updateQuantity: (id: string, size: string, quantity: number) => void;
   clearCart: () => void;
-  getTotalItems: () => number;
-  getTotalPrice: () => number;
+  totalItems: number;
+  totalPrice: number;
+  couponCode: string;
+  setCouponCode: (code: string) => void;
+  applyCoupon: () => boolean;
+  removeCoupon: () => void;
+  isCouponApplied: boolean;
+  discountAmount: number;
+  finalPrice: number;
 }
 
 const CartContext = createContext<CartContextType | undefined>(undefined);
 
+const VALID_COUPON = "MORSH-D";
+const COUPON_DISCOUNT = 0.2; // 20%
+
 export const CartProvider = ({ children }: { children: ReactNode }) => {
   const [items, setItems] = useState<CartItem[]>([]);
+  const [couponCode, setCouponCode] = useState("");
+  const [isCouponApplied, setIsCouponApplied] = useState(false);
 
-  const addItem = (item: Omit<CartItem, "quantity">) => {
+  const addItem = useCallback((item: Omit<CartItem, "quantity">) => {
     setItems((prevItems) => {
       const existingItemIndex = prevItems.findIndex(
         (i) => i.id === item.id && i.size === item.size
@@ -33,23 +45,28 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
 
       if (existingItemIndex > -1) {
         const updatedItems = [...prevItems];
-        updatedItems[existingItemIndex].quantity += 1;
+        updatedItems[existingItemIndex] = {
+          ...updatedItems[existingItemIndex],
+          quantity: updatedItems[existingItemIndex].quantity + 1,
+        };
         return updatedItems;
       }
 
       return [...prevItems, { ...item, quantity: 1 }];
     });
-  };
+  }, []);
 
-  const removeItem = (id: string, size: string) => {
+  const removeItem = useCallback((id: string, size: string) => {
     setItems((prevItems) =>
       prevItems.filter((item) => !(item.id === id && item.size === size))
     );
-  };
+  }, []);
 
-  const updateQuantity = (id: string, size: string, quantity: number) => {
+  const updateQuantity = useCallback((id: string, size: string, quantity: number) => {
     if (quantity <= 0) {
-      removeItem(id, size);
+      setItems((prevItems) =>
+        prevItems.filter((item) => !(item.id === id && item.size === size))
+      );
       return;
     }
 
@@ -58,32 +75,67 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
         item.id === id && item.size === size ? { ...item, quantity } : item
       )
     );
-  };
+  }, []);
 
-  const clearCart = () => {
+  const clearCart = useCallback(() => {
     setItems([]);
-  };
+  }, []);
 
-  const getTotalItems = () => {
-    return items.reduce((total, item) => total + item.quantity, 0);
-  };
+  const totalItems = useMemo(
+    () => items.reduce((total, item) => total + item.quantity, 0),
+    [items]
+  );
 
-  const getTotalPrice = () => {
-    return items.reduce((total, item) => total + item.price * item.quantity, 0);
-  };
+  const totalPrice = useMemo(
+    () => items.reduce((total, item) => total + item.price * item.quantity, 0),
+    [items]
+  );
+
+  const discountAmount = useMemo(
+    () => (isCouponApplied ? Math.round(totalPrice * COUPON_DISCOUNT) : 0),
+    [isCouponApplied, totalPrice]
+  );
+
+  const finalPrice = useMemo(
+    () => totalPrice - discountAmount,
+    [totalPrice, discountAmount]
+  );
+
+  const applyCoupon = useCallback(() => {
+    if (couponCode.trim().toUpperCase() === VALID_COUPON) {
+      setIsCouponApplied(true);
+      return true;
+    }
+    return false;
+  }, [couponCode]);
+
+  const removeCoupon = useCallback(() => {
+    setIsCouponApplied(false);
+    setCouponCode("");
+  }, []);
+
+  const value = useMemo(
+    () => ({
+      items,
+      addItem,
+      removeItem,
+      updateQuantity,
+      clearCart,
+      totalItems,
+      totalPrice,
+      couponCode,
+      setCouponCode,
+      applyCoupon,
+      removeCoupon,
+      isCouponApplied,
+      discountAmount,
+      finalPrice,
+    }),
+    [items, addItem, removeItem, updateQuantity, clearCart, totalItems, totalPrice, couponCode, applyCoupon, removeCoupon, isCouponApplied, discountAmount, finalPrice]
+  );
 
   return (
-    <CartContext.Provider
-      value={{
-        items,
-        addItem,
-        removeItem,
-        updateQuantity,
-        clearCart,
-        getTotalItems,
-        getTotalPrice,
-      }}
-    >
+    <CartContext.Provider value={value}>
       {children}
     </CartContext.Provider>
   );
@@ -96,4 +148,3 @@ export const useCart = () => {
   }
   return context;
 };
-

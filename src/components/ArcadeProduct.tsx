@@ -1,15 +1,38 @@
-import { useEffect, useRef, useState } from "react";
+import {
+  useEffect,
+  useRef,
+  useState,
+  useCallback,
+  lazy,
+  Suspense,
+} from "react";
 import { useTranslation } from "react-i18next";
 import gsap from "gsap";
 import { Button } from "@/components/ui/button";
 import { SizeSelector } from "./SizeSelector";
 import { LanguageSwitcher } from "./LanguageSwitcher";
 import { CartDrawer } from "./CartDrawer";
-import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { ShoppingCart, Sparkles, Star, Maximize2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useCart } from "@/contexts/CartContext";
-import arcadeTshirt from "@/assets/arcade-tshirt.jpg";
+
+// Lazy load Dialog (only needed when user clicks image)
+const Dialog = lazy(() =>
+  import("@/components/ui/dialog").then((m) => ({ default: m.Dialog })),
+);
+const DialogContent = lazy(() =>
+  import("@/components/ui/dialog").then((m) => ({ default: m.DialogContent })),
+);
+
+// Product images from public/images folder
+const productImagePaths = [
+  "/images/IMG_9008.jpg",
+  "/images/IMG_9009.jpg",
+  "/images/IMG_9010.jpg",
+  "/images/IMG_9021.jpg",
+  "/images/IMG_9026.jpg",
+  "/images/IMG_9027.jpg",
+];
 
 export const ArcadeProduct = () => {
   const { t, i18n } = useTranslation();
@@ -18,18 +41,11 @@ export const ArcadeProduct = () => {
   const [selectedSize, setSelectedSize] = useState<string>("m");
   const [selectedImage, setSelectedImage] = useState<number>(0);
   const [isImageModalOpen, setIsImageModalOpen] = useState<boolean>(false);
+  const [isCartOpen, setIsCartOpen] = useState<boolean>(false);
   const productRef = useRef<HTMLDivElement>(null);
   const titleRef = useRef<HTMLHeadingElement>(null);
   const imageRef = useRef<HTMLDivElement>(null);
   const featuresRef = useRef<HTMLDivElement>(null);
-
-  // Array of product images (for now using the same image, you can add more)
-  const productImages = [
-    arcadeTshirt,
-    arcadeTshirt, // Replace with different image paths when available
-    arcadeTshirt, // Replace with different image paths when available
-    arcadeTshirt, // Replace with different image paths when available
-  ];
 
   useEffect(() => {
     const ctx = gsap.context(() => {
@@ -39,6 +55,7 @@ export const ArcadeProduct = () => {
         opacity: 0,
         duration: 1,
         ease: "power3.out",
+        force3D: true,
       });
 
       // Image animation with scale and glow
@@ -48,6 +65,7 @@ export const ArcadeProduct = () => {
         duration: 1.2,
         ease: "back.out(1.7)",
         delay: 0.3,
+        force3D: true,
       });
 
       // Features stagger animation
@@ -58,18 +76,20 @@ export const ArcadeProduct = () => {
         duration: 0.8,
         ease: "power2.out",
         delay: 0.6,
+        force3D: true,
       });
 
-      // Floating animation for image
+      // Floating animation for image - GPU accelerated
       gsap.to(imageRef.current, {
         y: -10,
         duration: 2,
         repeat: -1,
         yoyo: true,
         ease: "sine.inOut",
+        force3D: true,
       });
 
-      // Pulsing glow effect - using opacity instead of textShadow
+      // Pulsing glow effect
       gsap.to(".neon-glow", {
         opacity: 0.8,
         duration: 1.5,
@@ -77,28 +97,29 @@ export const ArcadeProduct = () => {
         yoyo: true,
         ease: "sine.inOut",
       });
+
+      // Pulsing opacity for background morsh images
+      gsap.to(".morsh-bg", {
+        opacity: 0.5,
+        duration: 1.5,
+        repeat: -1,
+        yoyo: true,
+        ease: "sine.inOut",
+        stagger: 0.8,
+      });
     }, productRef);
 
     return () => ctx.revert();
   }, []);
 
-  const handleAddToCart = () => {
-    // Animate button
-    gsap.to(".add-to-cart-btn", {
-      scale: 0.95,
-      duration: 0.1,
-      yoyo: true,
-      repeat: 1,
-    });
-
-    // Add item to cart
+  const handleAddToCart = useCallback(() => {
     addItem({
       id: "arcade-tshirt",
-      name: "Arcade Edition T-Shirt",
-      nameAr: "قميص إصدار أركيد",
+      name: "DEMENTE BLACK ZIPUP JACKET",
+      nameAr: "جاكت ديمنتي الأسود بسوستة",
       size: selectedSize,
-      price: 29.99,
-      image: productImages[selectedImage],
+      price: 1200,
+      image: productImagePaths[selectedImage],
     });
 
     const isArabic = i18n.language === "ar";
@@ -107,35 +128,60 @@ export const ArcadeProduct = () => {
       title: isArabic ? "🎮 تمت الإضافة!" : "🎮 PLAYER READY!",
       description: isArabic
         ? `تمت إضافة المقاس ${selectedSize.toUpperCase()} إلى السلة`
-        : `Size ${selectedSize.toUpperCase()} added to cart - Game On!`,
+        : `Size ${selectedSize.toUpperCase()} added to cart`,
       duration: 3000,
     });
-  };
 
-  const handleThumbnailClick = (index: number) => {
+    setIsCartOpen(true);
+  }, [selectedSize, selectedImage, addItem, toast, i18n.language]);
+
+  const handleThumbnailClick = useCallback((index: number) => {
     setSelectedImage(index);
-    // Animate image change
     gsap.fromTo(
       imageRef.current,
       { scale: 0.9, opacity: 0 },
-      { scale: 1, opacity: 1, duration: 0.5, ease: "back.out(1.7)" }
+      {
+        scale: 1,
+        opacity: 1,
+        duration: 0.5,
+        ease: "back.out(1.7)",
+        force3D: true,
+      },
     );
-  };
+  }, []);
 
-  const handleImageClick = () => {
+  const handleImageClick = useCallback(() => {
     setIsImageModalOpen(true);
-  };
+  }, []);
 
   return (
     <div
       ref={productRef}
       className="min-h-screen bg-background relative overflow-hidden"
     >
-      {/* Decorative elements */}
+      {/* Decorative background elements */}
       <div className="absolute top-0 left-0 w-full h-full pointer-events-none overflow-hidden">
-        <div className="absolute top-5 left-5 md:top-10 md:left-10 w-12 h-12 md:w-20 md:h-20 border-2 md:border-4 border-primary/30 pixel-corners" />
-        <div className="absolute bottom-5 right-5 md:bottom-10 md:right-10 w-20 h-20 md:w-32 md:h-32 border-2 md:border-4 border-secondary/30 pixel-corners" />
-        <div className="hidden md:block absolute top-1/2 right-20 w-16 h-16 border-4 border-accent/30 pixel-corners" />
+        <img
+          src="/images/back-img.png"
+          alt=""
+          loading="lazy"
+          decoding="async"
+          className="morsh-bg absolute top-10 left-5 md:top-20 md:left-10 w-16 h-16 md:w-28 md:h-28 object-contain opacity-5 will-change-[opacity]"
+        />
+        {/* <img
+          src="/images/back-img.png"
+          alt=""
+          loading="lazy"
+          decoding="async"
+          className="morsh-bg absolute bottom-5 right-5 md:bottom-40 md:right-40 w-24 h-24 md:w-40 md:h-40 object-contain opacity-5 will-change-[opacity]"
+        />
+        <img
+          src="/images/back-img.png"
+          alt=""
+          loading="lazy"
+          decoding="async"
+          className="morsh-bg hidden md:block absolute top-1/2 right-10 w-20 h-20 object-contain opacity-5 will-change-[opacity]"
+        /> */}
       </div>
 
       {/* Header */}
@@ -147,7 +193,7 @@ export const ArcadeProduct = () => {
           </span>
         </div>
         <div className="flex items-center gap-2 md:gap-4">
-          <CartDrawer />
+          <CartDrawer open={isCartOpen} onOpenChange={setIsCartOpen} />
           <LanguageSwitcher />
         </div>
       </header>
@@ -157,16 +203,17 @@ export const ArcadeProduct = () => {
         <div className="grid lg:grid-cols-2 gap-6 md:gap-12 items-center max-w-7xl mx-auto">
           {/* Product Image */}
           <div className="space-y-3 md:space-y-4">
-            <div ref={imageRef} className="relative">
+            <div ref={imageRef} className="relative will-change-transform">
               <div
-                className="neon-border pixel-corners bg-card/50 p-4 md:p-8 backdrop-blur-sm group cursor-pointer"
+                className="neon-border pixel-corners bg-card/50 p-3 md:p-5 backdrop-blur-sm group cursor-pointer"
                 onClick={handleImageClick}
               >
                 <div className="relative overflow-hidden rounded-lg">
                   <img
-                    src={productImages[selectedImage]}
+                    src={productImagePaths[selectedImage]}
                     alt="Arcade T-Shirt"
-                    className="w-full h-auto rounded-lg transition-transform duration-300 group-hover:scale-105"
+                    decoding="async"
+                    className="w-full max-h-[350px] md:max-h-[450px] object-contain rounded-lg transition-transform duration-300 group-hover:scale-105"
                   />
                   {/* Zoom icon overlay */}
                   <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center rounded-lg pointer-events-none">
@@ -180,8 +227,8 @@ export const ArcadeProduct = () => {
             </div>
 
             {/* Thumbnail Images */}
-            <div className="grid grid-cols-4 gap-2 md:gap-3">
-              {productImages.map((image, index) => (
+            <div className="grid grid-cols-6 gap-2 md:gap-3">
+              {productImagePaths.map((image, index) => (
                 <button
                   key={index}
                   onClick={() => handleThumbnailClick(index)}
@@ -194,7 +241,9 @@ export const ArcadeProduct = () => {
                   <img
                     src={image}
                     alt={`Thumbnail ${index + 1}`}
-                    className="w-full h-auto rounded"
+                    loading="lazy"
+                    decoding="async"
+                    className="w-full h-16 md:h-20 object-cover rounded"
                   />
                 </button>
               ))}
@@ -224,7 +273,10 @@ export const ArcadeProduct = () => {
             {/* Features */}
             <div ref={featuresRef} className="grid grid-cols-3 gap-2 md:gap-4">
               {Object.entries(
-                t("features", { returnObjects: true }) as Record<string, string>
+                t("features", { returnObjects: true }) as Record<
+                  string,
+                  string
+                >,
               ).map(([key, value]) => (
                 <div
                   key={key}
@@ -264,18 +316,22 @@ export const ArcadeProduct = () => {
       {/* Footer decoration */}
       <div className="fixed bottom-0 left-0 w-full h-2 bg-gradient-to-r from-primary via-secondary to-accent" />
 
-      {/* Image Zoom Modal */}
-      <Dialog open={isImageModalOpen} onOpenChange={setIsImageModalOpen}>
-        <DialogContent className="max-w-5xl w-[95vw] md:w-full p-2 md:p-4 bg-background/95 backdrop-blur-md border-2 md:border-4 border-primary">
-          <div className="relative">
-            <img
-              src={productImages[selectedImage]}
-              alt="Arcade T-Shirt Enlarged"
-              className="w-full h-auto rounded-lg"
-            />
-          </div>
-        </DialogContent>
-      </Dialog>
+      {/* Image Zoom Modal - Lazy loaded */}
+      {isImageModalOpen && (
+        <Suspense fallback={null}>
+          <Dialog open={isImageModalOpen} onOpenChange={setIsImageModalOpen}>
+            <DialogContent className="max-w-3xl w-[95vw] md:w-full p-2 md:p-4 bg-background/95 backdrop-blur-md border-2 md:border-4 border-primary">
+              <div className="relative flex items-center justify-center">
+                <img
+                  src={productImagePaths[selectedImage]}
+                  alt="Arcade T-Shirt Enlarged"
+                  className="w-full max-h-[70vh] object-contain rounded-lg"
+                />
+              </div>
+            </DialogContent>
+          </Dialog>
+        </Suspense>
+      )}
     </div>
   );
 };
