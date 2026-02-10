@@ -52,6 +52,19 @@ interface State {
 
 const toastTimeouts = new Map<string, ReturnType<typeof setTimeout>>();
 
+/** Clear every pending toast timeout.  Called on `pagehide` so the browser
+ *  can store this page in the back/forward cache (bfcache). Active timers
+ *  are one of the reasons bfcache restoration gets blocked. */
+function clearAllToastTimeouts() {
+  toastTimeouts.forEach((timeout) => clearTimeout(timeout));
+  toastTimeouts.clear();
+}
+
+// Register once – `pagehide` fires right before a page enters bfcache.
+if (typeof window !== "undefined") {
+  window.addEventListener("pagehide", clearAllToastTimeouts);
+}
+
 const addToRemoveQueue = (toastId: string) => {
   if (toastTimeouts.has(toastId)) {
     return;
@@ -85,8 +98,6 @@ export const reducer = (state: State, action: Action): State => {
     case "DISMISS_TOAST": {
       const { toastId } = action;
 
-      // ! Side effects ! - This could be extracted into a dismissToast() action,
-      // but I'll keep it here for simplicity
       if (toastId) {
         addToRemoveQueue(toastId);
       } else {

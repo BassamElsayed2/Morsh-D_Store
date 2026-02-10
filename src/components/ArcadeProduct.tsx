@@ -11,7 +11,7 @@ import gsap from "gsap";
 import { Button } from "@/components/ui/button";
 import { SizeSelector } from "./SizeSelector";
 import { LanguageSwitcher } from "./LanguageSwitcher";
-import { CartDrawer } from "./CartDrawer";
+import { OptimizedImage } from "./OptimizedImage";
 import { ShoppingCart, Sparkles, Star, Maximize2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useCart } from "@/contexts/CartContext";
@@ -24,14 +24,20 @@ const DialogContent = lazy(() =>
   import("@/components/ui/dialog").then((m) => ({ default: m.DialogContent })),
 );
 
+// Lazy load CartDrawer — pulls in Sheet, ScrollArea, Badge, CheckoutForm,
+// and 8 lucide icons. Only needed when the user interacts with the cart.
+const CartDrawer = lazy(() =>
+  import("./CartDrawer").then((m) => ({ default: m.CartDrawer })),
+);
+
 // Product images from public/images folder
 const productImagePaths = [
-  "/images/IMG_9008.jpg",
-  "/images/IMG_9009.jpg",
-  "/images/IMG_9010.jpg",
   "/images/IMG_9021.jpg",
   "/images/IMG_9026.jpg",
   "/images/IMG_9027.jpg",
+  "/images/IMG_9008.jpg",
+  "/images/IMG_9009.jpg",
+  "/images/IMG_9010.jpg",
 ];
 
 export const ArcadeProduct = () => {
@@ -49,37 +55,52 @@ export const ArcadeProduct = () => {
 
   useEffect(() => {
     const ctx = gsap.context(() => {
-      // Title animation
-      gsap.from(titleRef.current, {
-        y: -50,
-        opacity: 0,
+      // ── Batch all initial states FIRST (single write pass) ──
+      // Setting all "from" states at once avoids the write→read→write
+      // thrashing that separate fromTo() calls cause. GSAP internally
+      // calls getBoundingClientRect() inside fromTo/from, so grouping
+      // the reads before the writes eliminates forced reflows.
+      gsap.set(titleRef.current, { y: -50, opacity: 0, force3D: true });
+      gsap.set(imageRef.current, { scale: 0.8, opacity: 0, force3D: true });
+      gsap.set(".feature-item", { x: -50, opacity: 0, force3D: true });
+
+      // ── Single timeline for all entrance animations ─────────
+      // A timeline batches its internal geometry reads into one pass
+      // instead of forcing a reflow per-tween.
+      const tl = gsap.timeline();
+
+      tl.to(titleRef.current, {
+        y: 0,
+        opacity: 1,
         duration: 1,
         ease: "power3.out",
         force3D: true,
-      });
+      })
+        .to(
+          imageRef.current,
+          {
+            scale: 1,
+            opacity: 1,
+            duration: 1.2,
+            ease: "back.out(1.7)",
+            force3D: true,
+          },
+          0.3, // start at t = 0.3s (overlap with title)
+        )
+        .to(
+          ".feature-item",
+          {
+            x: 0,
+            opacity: 1,
+            stagger: 0.2,
+            duration: 0.8,
+            ease: "power2.out",
+            force3D: true,
+          },
+          0.6, // start at t = 0.6s
+        );
 
-      // Image animation with scale and glow
-      gsap.from(imageRef.current, {
-        scale: 0.8,
-        opacity: 0,
-        duration: 1.2,
-        ease: "back.out(1.7)",
-        delay: 0.3,
-        force3D: true,
-      });
-
-      // Features stagger animation
-      gsap.from(".feature-item", {
-        x: -50,
-        opacity: 0,
-        stagger: 0.2,
-        duration: 0.8,
-        ease: "power2.out",
-        delay: 0.6,
-        force3D: true,
-      });
-
-      // Floating animation for image - GPU accelerated
+      // ── Continuous animations (transform / opacity only, no reflow) ──
       gsap.to(imageRef.current, {
         y: -10,
         duration: 2,
@@ -89,7 +110,6 @@ export const ArcadeProduct = () => {
         force3D: true,
       });
 
-      // Pulsing glow effect
       gsap.to(".neon-glow", {
         opacity: 0.8,
         duration: 1.5,
@@ -98,7 +118,6 @@ export const ArcadeProduct = () => {
         ease: "sine.inOut",
       });
 
-      // Pulsing opacity for background morsh images
       gsap.to(".morsh-bg", {
         opacity: 0.5,
         duration: 1.5,
@@ -137,17 +156,20 @@ export const ArcadeProduct = () => {
 
   const handleThumbnailClick = useCallback((index: number) => {
     setSelectedImage(index);
-    gsap.fromTo(
-      imageRef.current,
-      { scale: 0.9, opacity: 0 },
-      {
-        scale: 1,
-        opacity: 1,
-        duration: 0.5,
-        ease: "back.out(1.7)",
-        force3D: true,
-      },
-    );
+
+    requestAnimationFrame(() => {
+      gsap.fromTo(
+        imageRef.current,
+        { scale: 0.9, opacity: 0 },
+        {
+          scale: 1,
+          opacity: 1,
+          duration: 0.5,
+          ease: "back.out(1.7)",
+          force3D: true,
+        },
+      );
+    });
   }, []);
 
   const handleImageClick = useCallback(() => {
@@ -161,27 +183,15 @@ export const ArcadeProduct = () => {
     >
       {/* Decorative background elements */}
       <div className="absolute top-0 left-0 w-full h-full pointer-events-none overflow-hidden">
-        <img
+        <OptimizedImage
           src="/images/back-img.png"
           alt=""
+          width={112}
+          height={112}
           loading="lazy"
           decoding="async"
           className="morsh-bg absolute top-10 left-5 md:top-20 md:left-10 w-16 h-16 md:w-28 md:h-28 object-contain opacity-5 will-change-[opacity]"
         />
-        {/* <img
-          src="/images/back-img.png"
-          alt=""
-          loading="lazy"
-          decoding="async"
-          className="morsh-bg absolute bottom-5 right-5 md:bottom-40 md:right-40 w-24 h-24 md:w-40 md:h-40 object-contain opacity-5 will-change-[opacity]"
-        />
-        <img
-          src="/images/back-img.png"
-          alt=""
-          loading="lazy"
-          decoding="async"
-          className="morsh-bg hidden md:block absolute top-1/2 right-10 w-20 h-20 object-contain opacity-5 will-change-[opacity]"
-        /> */}
       </div>
 
       {/* Header */}
@@ -193,7 +203,19 @@ export const ArcadeProduct = () => {
           </span>
         </div>
         <div className="flex items-center gap-2 md:gap-4">
-          <CartDrawer open={isCartOpen} onOpenChange={setIsCartOpen} />
+          <Suspense
+            fallback={
+              <Button
+                variant="outline"
+                size="icon"
+                className="neon-border pixel-corners"
+              >
+                <ShoppingCart className="w-4 h-4 md:w-5 md:h-5" />
+              </Button>
+            }
+          >
+            <CartDrawer open={isCartOpen} onOpenChange={setIsCartOpen} />
+          </Suspense>
           <LanguageSwitcher />
         </div>
       </header>
@@ -233,17 +255,20 @@ export const ArcadeProduct = () => {
                 <button
                   key={index}
                   onClick={() => handleThumbnailClick(index)}
-                  className={`neon-border pixel-corners p-1 md:p-2 bg-card/50 backdrop-blur-sm transition-all duration-300 hover:scale-105 ${
+                  className={`neon-border pixel-corners p-1 md:p-2 bg-card/50 backdrop-blur-sm transition-[transform,opacity,box-shadow,ring-color] duration-300 hover:scale-105 ${
                     selectedImage === index
                       ? "ring-2 md:ring-4 ring-primary shadow-lg shadow-primary/50"
                       : "opacity-70 hover:opacity-100"
                   }`}
                 >
-                  <img
+                  <OptimizedImage
                     src={image}
                     alt={`Thumbnail ${index + 1}`}
+                    width={100}
+                    height={40}
                     loading="lazy"
                     decoding="async"
+                    sizes="(max-width: 768px) 15vw, 100px"
                     className="w-full h-16 md:h-20 object-cover rounded"
                   />
                 </button>
@@ -323,9 +348,13 @@ export const ArcadeProduct = () => {
           <Dialog open={isImageModalOpen} onOpenChange={setIsImageModalOpen}>
             <DialogContent className="max-w-3xl w-[95vw] md:w-full p-2 md:p-4 bg-background/95 backdrop-blur-md border-2 md:border-4 border-primary">
               <div className="relative flex items-center justify-center">
-                <img
+                <OptimizedImage
                   src={productImagePaths[selectedImage]}
                   alt="Arcade T-Shirt Enlarged"
+                  width={900}
+                  height={1200}
+                  loading="eager"
+                  sizes="(max-width: 768px) 95vw, 900px"
                   className="w-full max-h-[70vh] object-contain rounded-lg"
                 />
               </div>

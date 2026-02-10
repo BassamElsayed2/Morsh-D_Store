@@ -54,19 +54,24 @@
 
   body {
     @apply bg-background text-foreground;
-    font-family: "Courier New", monospace;
+    /* System monospace stack – no network font to load = no FOIT/FOUT shift.
+       size-adjust prevents metric differences between fallback fonts. */
+    font-family: "Courier New", "Courier", ui-monospace, monospace;
   }
 
-  /* Scanline effect - GPU accelerated */
+  /* Scanline effect - GPU accelerated & reflow-isolated.
+     `contain: strict` tells the browser this element's layout is
+     fully independent of the rest of the document, so changes
+     elsewhere never force a reflow of this full-viewport layer.
+     `content-visibility: auto` lets the compositor skip painting
+     when the overlay isn't contributing visible pixels. */
   body::before {
     content: "";
     position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
+    inset: 0;
     pointer-events: none;
     z-index: 9999;
+    contain: strict;
     will-change: transform;
     transform: translateZ(0);
     background: repeating-linear-gradient(
@@ -109,7 +114,7 @@
   }
 
   .arcade-button {
-    @apply neon-border pixel-corners transition-all duration-200;
+    @apply neon-border pixel-corners transition-[box-shadow,background-color,color,opacity,transform] duration-200;
     @apply hover:shadow-[0_0_20px_hsl(var(--neon-glow))];
   }
 }

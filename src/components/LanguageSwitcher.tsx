@@ -11,8 +11,12 @@ export const LanguageSwitcher = memo(() => {
   }, [i18n]);
 
   useEffect(() => {
-    document.documentElement.dir = i18n.language === "ar" ? "rtl" : "ltr";
-    document.documentElement.lang = i18n.language;
+    const isArabic = i18n.language === "ar";
+    requestAnimationFrame(() => {
+      const root = document.documentElement;
+      root.dir = isArabic ? "rtl" : "ltr";
+      root.lang = i18n.language;
+    });
   }, [i18n.language]);
 
   return (
@@ -20,7 +24,7 @@ export const LanguageSwitcher = memo(() => {
       onClick={toggleLanguage}
       variant="outline"
       size="sm"
-      className="arcade-button bg-card text-primary font-bold uppercase tracking-wider"
+      className="arcade-button bg-card text-primary font-bold uppercase tracking-wider min-w-[52px]"
     >
       {i18n.language === "en" ? "عربي" : "EN"}
     </Button>

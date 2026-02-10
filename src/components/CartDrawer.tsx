@@ -24,6 +24,7 @@ import {
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Separator } from "@/components/ui/separator";
 import { CheckoutForm, type FormData } from "./CheckoutForm";
+import { OptimizedImage } from "./OptimizedImage";
 
 interface CartDrawerProps {
   open?: boolean;
@@ -101,23 +102,23 @@ export const CartDrawer = memo(
           ? `🏙️ المدينة: ${shippingData.city}\n`
           : `🏙️ City: ${shippingData.city}\n`;
 
-    message += isArabic
-      ? `🏠 العنوان: ${shippingData.apartment}\n`
-      : `🏠 Address: ${shippingData.apartment}\n`;
+        message += isArabic
+          ? `🏠 العنوان: ${shippingData.apartment}\n`
+          : `🏠 Address: ${shippingData.apartment}\n`;
 
-    // Payment Method
-    const paymentMethodText =
-      shippingData.paymentMethod === "instapay"
-        ? isArabic
-          ? "📱 انستاباي (InstaPay)"
-          : "📱 InstaPay"
-        : isArabic
-          ? "💵 الدفع عند الاستلام"
-          : "💵 Cash on Delivery";
+        // Payment Method
+        const paymentMethodText =
+          shippingData.paymentMethod === "instapay"
+            ? isArabic
+              ? "📱 انستاباي (InstaPay)"
+              : "📱 InstaPay"
+            : isArabic
+              ? "💵 الدفع عند الاستلام"
+              : "💵 Cash on Delivery";
 
-    message += isArabic
-      ? `💳 طريقة الدفع: ${paymentMethodText}\n\n`
-      : `💳 Payment Method: ${paymentMethodText}\n\n`;
+        message += isArabic
+          ? `💳 طريقة الدفع: ${paymentMethodText}\n\n`
+          : `💳 Payment Method: ${paymentMethodText}\n\n`;
 
         // Order Items
         message += isArabic ? "🛒 *المنتجات:*\n" : "🛒 *Order Items:*\n";
@@ -134,13 +135,14 @@ export const CartDrawer = memo(
 
         if (isCouponApplied) {
           message += isArabic
-            ? `\n🎟️ *كوبون خصم: MORSH-D (-20%)*\n*الخصم: -${discountAmount} جنيه*\n*المجموع بعد الخصم: ${finalPrice} جنيه*`
-            : `\n🎟️ *Coupon: MORSH-D (-20%)*\n*Discount: -${discountAmount} EGP*\n*Total after discount: ${finalPrice} EGP*`;
+            ? `\n🎟️ *كوبون خصم: MD20 (-20%)*\n*الخصم: -${discountAmount} جنيه*\n*المجموع بعد الخصم: ${finalPrice} جنيه*`
+            : `\n🎟️ *Coupon: MD20 (-20%)*\n*Discount: -${discountAmount} EGP*\n*Total after discount: ${finalPrice} EGP*`;
         }
 
         const phoneNumber = "201013816187";
         const whatsappUrl = `https://wa.me/${phoneNumber}?text=${encodeURIComponent(message)}`;
-        window.open(whatsappUrl, "_blank");
+
+        window.open(whatsappUrl, "_blank", "noopener,noreferrer");
 
         // Close checkout form and cart after sending
         setShowCheckoutForm(false);
@@ -239,11 +241,14 @@ export const CartDrawer = memo(
                       className="neon-border pixel-corners bg-card/50 p-3 md:p-4 space-y-2 md:space-y-3"
                     >
                       <div className="flex gap-3 md:gap-4">
-                        <img
+                        <OptimizedImage
                           src={item.image}
                           alt={isArabic ? item.nameAr : item.name}
+                          width={80}
+                          height={80}
                           loading="lazy"
                           decoding="async"
+                          sizes="80px"
                           className="w-16 h-16 md:w-20 md:h-20 object-cover rounded pixel-corners flex-shrink-0"
                         />
                         <div className="flex-1 space-y-1 min-w-0">
@@ -328,7 +333,7 @@ export const CartDrawer = memo(
                       <div className="flex items-center gap-2">
                         <CheckCircle2 className="w-4 h-4 text-green-500" />
                         <span className="text-sm font-bold text-green-500">
-                          MORSH-D (-20%)
+                          MD20 (-20%)
                         </span>
                       </div>
                       <Button
