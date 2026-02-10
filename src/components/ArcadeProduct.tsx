@@ -213,6 +213,7 @@ export const ArcadeProduct = () => {
                     src={productImagePaths[selectedImage]}
                     alt="Arcade T-Shirt"
                     decoding="async"
+                    loading="lazy"
                     className="w-full max-h-[350px] md:max-h-[450px] object-contain rounded-lg transition-transform duration-300 group-hover:scale-105"
                   />
                   {/* Zoom icon overlay */}
