@@ -32,12 +32,12 @@ const CartDrawer = lazy(() =>
 
 // Product images from public/images folder
 const productImagePaths = [
-  "/images/IMG_9021.jpg",
-  "/images/IMG_9026.jpg",
-  "/images/IMG_9027.jpg",
-  "/images/IMG_9008.jpg",
-  "/images/IMG_9009.jpg",
-  "/images/IMG_9010.jpg",
+  "/images/IMG_9020.webp",
+  "/images/IMG_9028.webp",
+  "/images/IMG_9008.webp",
+  "/images/IMG_9009.webp",
+  "/images/IMG_9010.webp",
+  "/images/sizes2.jpeg",
 ];
 
 export const ArcadeProduct = () => {
@@ -55,18 +55,10 @@ export const ArcadeProduct = () => {
 
   useEffect(() => {
     const ctx = gsap.context(() => {
-      // ── Batch all initial states FIRST (single write pass) ──
-      // Setting all "from" states at once avoids the write→read→write
-      // thrashing that separate fromTo() calls cause. GSAP internally
-      // calls getBoundingClientRect() inside fromTo/from, so grouping
-      // the reads before the writes eliminates forced reflows.
       gsap.set(titleRef.current, { y: -50, opacity: 0, force3D: true });
       gsap.set(imageRef.current, { scale: 0.8, opacity: 0, force3D: true });
       gsap.set(".feature-item", { x: -50, opacity: 0, force3D: true });
 
-      // ── Single timeline for all entrance animations ─────────
-      // A timeline batches its internal geometry reads into one pass
-      // instead of forcing a reflow per-tween.
       const tl = gsap.timeline();
 
       tl.to(titleRef.current, {

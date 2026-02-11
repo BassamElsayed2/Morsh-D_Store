@@ -1,6 +1,7 @@
 import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react-swc";
 import path from "path";
+import type imagemin from "imagemin";
 import viteImagemin from "@vheemstra/vite-plugin-imagemin";
 import imageminMozjpeg from "imagemin-mozjpeg";
 import imageminPngquant from "imagemin-pngquant";
@@ -25,7 +26,7 @@ export default defineConfig({
         png: imageminPngquant({
           quality: [0.7, 0.85],
           speed: 4,
-        }) as any, // Type assertion to fix compatibility issue
+        }) as unknown as imagemin.Plugin,
       },
       makeWebp: {
         plugins: {
