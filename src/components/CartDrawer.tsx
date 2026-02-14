@@ -25,6 +25,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { Separator } from "@/components/ui/separator";
 import { CheckoutForm, type FormData } from "./CheckoutForm";
 import { OptimizedImage } from "./OptimizedImage";
+import { getDeliveryFee, DELIVERY_TANTA, DELIVERY_OTHER } from "@/lib/delivery";
 
 interface CartDrawerProps {
   open?: boolean;
@@ -94,10 +95,14 @@ export const CartDrawer = memo(
           ? `📱 الهاتف: ${shippingData.phone}\n`
           : `📱 Phone: ${shippingData.phone}\n`;
 
+        if (shippingData.country) {
+          message += isArabic
+            ? `🌍 الدولة: ${shippingData.country}\n`
+            : `🌍 Country: ${shippingData.country}\n`;
+        }
         message += isArabic
           ? `📍 المحافظة: ${shippingData.governorate}\n`
-          : `📍 Governorate: ${shippingData.governorate}\n`;
-
+          : `📍 State: ${shippingData.governorate}\n`;
         message += isArabic
           ? `🏙️ المدينة: ${shippingData.city}\n`
           : `🏙️ City: ${shippingData.city}\n`;
@@ -129,6 +134,10 @@ export const CartDrawer = memo(
             : `${index + 1}. *${itemName}*\n   Size: ${item.size.toUpperCase()}\n   Quantity: ${item.quantity}\n   Price: ${item.price} EGP\n   Subtotal: ${item.price * item.quantity} EGP\n\n`;
         });
 
+        const subtotal = isCouponApplied ? finalPrice : totalPrice;
+        const deliveryFee = getDeliveryFee(shippingData.city);
+        const totalWithDelivery = subtotal + deliveryFee;
+
         message += isArabic
           ? `━━━━━━━━━━━━━━━\n*المجموع: ${totalPrice} جنيه*\n*عدد القطع: ${totalItems}*`
           : `━━━━━━━━━━━━━━━\n*Subtotal: ${totalPrice} EGP*\n*Total Items: ${totalItems}*`;
@@ -138,6 +147,10 @@ export const CartDrawer = memo(
             ? `\n🎟️ *كوبون خصم: MD20 (-20%)*\n*الخصم: -${discountAmount} جنيه*\n*المجموع بعد الخصم: ${finalPrice} جنيه*`
             : `\n🎟️ *Coupon: MD20 (-20%)*\n*Discount: -${discountAmount} EGP*\n*Total after discount: ${finalPrice} EGP*`;
         }
+
+        message += isArabic
+          ? `\n🚚 *التوصيل: ${deliveryFee} جنيه*\n💰 *الإجمالي النهائي: ${totalWithDelivery} جنيه*`
+          : `\n🚚 *Delivery: ${deliveryFee} EGP*\n💰 *Total: ${totalWithDelivery} EGP*`;
 
         const phoneNumber = "201013816187";
         const whatsappUrl = `https://wa.me/${phoneNumber}?text=${encodeURIComponent(message)}`;
@@ -417,6 +430,7 @@ export const CartDrawer = memo(
                       </div>
                     </>
                   )}
+
                   <Separator className="my-2" />
                   <div className="flex items-center justify-between">
                     <span className="text-lg md:text-xl font-bold">
@@ -453,6 +467,7 @@ export const CartDrawer = memo(
         {/* Checkout Form Modal */}
         {showCheckoutForm && (
           <CheckoutForm
+            cartSubtotal={isCouponApplied ? finalPrice : totalPrice}
             onSubmit={handleCheckoutSubmit}
             onClose={handleCheckoutClose}
           />

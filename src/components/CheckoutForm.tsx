@@ -1,9 +1,12 @@
-import { useState, useCallback, useEffect } from "react";
+import { useState, useCallback, useEffect, useMemo } from "react";
 import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
 import { X } from "lucide-react";
+import { getDeliveryFee } from "@/lib/delivery";
+import { EGYPT_COUNTRY, EGYPT_STATES, getCitiesByState } from "@/data/egypt";
 
 interface CheckoutFormProps {
+  cartSubtotal?: number;
   onSubmit: (formData: FormData) => void;
   onClose: () => void;
 }
@@ -13,72 +16,51 @@ export interface FormData {
   lastName: string;
   email: string;
   phone: string;
+  country: string;
   governorate: string;
   city: string;
   apartment: string;
   paymentMethod: string;
 }
 
-// محافظات مصر
-const egyptGovernorates = [
-  { en: "Cairo", ar: "القاهرة" },
-  { en: "Giza", ar: "الجيزة" },
-  { en: "Alexandria", ar: "الإسكندرية" },
-  { en: "Dakahlia", ar: "الدقهلية" },
-  { en: "Red Sea", ar: "البحر الأحمر" },
-  { en: "Beheira", ar: "البحيرة" },
-  { en: "Fayoum", ar: "الفيوم" },
-  { en: "Gharbiya", ar: "الغربية" },
-  { en: "Ismailia", ar: "الإسماعيلية" },
-  { en: "Menofia", ar: "المنوفية" },
-  { en: "Minya", ar: "المنيا" },
-  { en: "Qaliubiya", ar: "القليوبية" },
-  { en: "New Valley", ar: "الوادي الجديد" },
-  { en: "Suez", ar: "السويس" },
-  { en: "Aswan", ar: "أسوان" },
-  { en: "Assiut", ar: "أسيوط" },
-  { en: "Beni Suef", ar: "بني سويف" },
-  { en: "Port Said", ar: "بورسعيد" },
-  { en: "Damietta", ar: "دمياط" },
-  { en: "Sharqia", ar: "الشرقية" },
-  { en: "South Sinai", ar: "جنوب سيناء" },
-  { en: "Kafr El Sheikh", ar: "كفر الشيخ" },
-  { en: "Matrouh", ar: "مطروح" },
-  { en: "Luxor", ar: "الأقصر" },
-  { en: "Qena", ar: "قنا" },
-  { en: "North Sinai", ar: "شمال سيناء" },
-  { en: "Sohag", ar: "سوهاج" },
-];
-
 const STORAGE_KEY = "morsh-d-checkout-form";
 
-export const CheckoutForm = ({ onSubmit, onClose }: CheckoutFormProps) => {
+export const CheckoutForm = ({ cartSubtotal = 0, onSubmit, onClose }: CheckoutFormProps) => {
   const { i18n } = useTranslation();
   const isArabic = i18n.language === "ar";
 
   // Load form data from sessionStorage on mount
   const [formData, setFormData] = useState<FormData>(() => {
-    try {
-      const savedData = sessionStorage.getItem(STORAGE_KEY);
-      if (savedData) {
-        return JSON.parse(savedData);
-      }
-    } catch (error) {
-      console.error("Error loading form data from sessionStorage:", error);
-    }
-    return {
+    const defaults: FormData = {
       firstName: "",
       lastName: "",
       email: "",
       phone: "",
+      country: EGYPT_COUNTRY.en,
       governorate: "",
       city: "",
       apartment: "",
       paymentMethod: "cash",
     };
+    try {
+      const savedData = sessionStorage.getItem(STORAGE_KEY);
+      if (savedData) {
+        const parsed = JSON.parse(savedData) as Partial<FormData>;
+        return { ...defaults, ...parsed, country: parsed.country ?? EGYPT_COUNTRY.en };
+      }
+    } catch (error) {
+      console.error("Error loading form data from sessionStorage:", error);
+    }
+    return defaults;
   });
 
   const [errors, setErrors] = useState<Partial<FormData>>({});
+
+  const deliveryFee = useMemo(
+    () => getDeliveryFee(formData.city),
+    [formData.city],
+  );
+  const totalWithDelivery = cartSubtotal + deliveryFee;
 
   // Save form data to sessionStorage whenever it changes
   useEffect(() => {
@@ -91,8 +73,11 @@ export const CheckoutForm = ({ onSubmit, onClose }: CheckoutFormProps) => {
 
   const handleInputChange = useCallback(
     (field: keyof FormData, value: string) => {
-      setFormData((prev) => ({ ...prev, [field]: value }));
-      // Clear error when user starts typing
+      setFormData((prev) => {
+        const next = { ...prev, [field]: value };
+        if (field === "governorate") next.city = "";
+        return next;
+      });
       if (errors[field]) {
         setErrors((prev) => ({ ...prev, [field]: "" }));
       }
@@ -159,6 +144,7 @@ export const CheckoutForm = ({ onSubmit, onClose }: CheckoutFormProps) => {
         lastName: "",
         email: "",
         phone: "",
+        country: EGYPT_COUNTRY.en,
         governorate: "",
         city: "",
         apartment: "",
@@ -279,10 +265,23 @@ export const CheckoutForm = ({ onSubmit, onClose }: CheckoutFormProps) => {
             )}
           </div>
 
-          {/* Governorate */}
+          {/* Country - مصر فقط */}
           <div>
             <label className="block text-sm font-bold mb-2">
-              {isArabic ? "المحافظة" : "Governorate"} <span className="text-destructive">*</span>
+              {isArabic ? "الدولة" : "Country"}
+            </label>
+            <input
+              type="text"
+              readOnly
+              value={isArabic ? EGYPT_COUNTRY.ar : EGYPT_COUNTRY.en}
+              className="w-full bg-muted/50 border rounded px-3 py-2 outline-none cursor-not-allowed text-muted-foreground"
+            />
+          </div>
+
+          {/* State (المحافظة) */}
+          <div>
+            <label className="block text-sm font-bold mb-2">
+              {isArabic ? "المحافظة" : "State / Governorate"} <span className="text-destructive">*</span>
             </label>
             <select
               value={formData.governorate}
@@ -292,11 +291,11 @@ export const CheckoutForm = ({ onSubmit, onClose }: CheckoutFormProps) => {
               }`}
             >
               <option value="">
-                {isArabic ? "اختر المحافظة..." : "Select governorate..."}
+                {isArabic ? "اختر المحافظة..." : "Select state..."}
               </option>
-              {egyptGovernorates.map((gov) => (
-                <option key={gov.en} value={gov.en}>
-                  {isArabic ? gov.ar : gov.en}
+              {EGYPT_STATES.map((state) => (
+                <option key={state.en} value={state.en}>
+                  {isArabic ? state.ar : state.en}
                 </option>
               ))}
             </select>
@@ -305,24 +304,52 @@ export const CheckoutForm = ({ onSubmit, onClose }: CheckoutFormProps) => {
             )}
           </div>
 
-          {/* City */}
+          {/* City - من الداتا حسب المحافظة */}
           <div>
             <label className="block text-sm font-bold mb-2">
-              {isArabic ? "المدينة / المنطقة" : "City / Area"} <span className="text-destructive">*</span>
+              {isArabic ? "المدينة" : "City"} <span className="text-destructive">*</span>
             </label>
-            <input
-              type="text"
+            <select
               value={formData.city}
               onChange={(e) => handleInputChange("city", e.target.value)}
-              className={`w-full bg-background border rounded px-3 py-2 outline-none focus:ring-2 focus:ring-primary transition-all ${
+              disabled={!formData.governorate}
+              className={`w-full bg-background border rounded px-3 py-2 outline-none focus:ring-2 focus:ring-primary transition-all disabled:opacity-50 disabled:cursor-not-allowed ${
                 errors.city ? "border-destructive ring-1 ring-destructive" : "border-border"
               }`}
-              placeholder={isArabic ? "أدخل المدينة أو المنطقة..." : "Enter city or area..."}
-            />
+            >
+              <option value="">
+                {formData.governorate
+                  ? (isArabic ? "اختر المدينة..." : "Select city...")
+                  : (isArabic ? "اختر المحافظة أولاً" : "Select state first")}
+              </option>
+              {getCitiesByState(formData.governorate).map((city) => (
+                <option key={city.en} value={city.en}>
+                  {isArabic ? city.ar : city.en}
+                </option>
+              ))}
+            </select>
             {errors.city && (
               <p className="text-xs text-destructive mt-1">{errors.city}</p>
             )}
           </div>
+
+          {/* Delivery & Total Summary */}
+          {formData.city.trim() && (
+            <div className="neon-border pixel-corners bg-card/50 p-3 space-y-2">
+              <div className="flex items-center justify-between text-sm">
+                <span className="text-muted-foreground">
+                  {isArabic ? "سعر التوصيل:" : "Delivery:"}
+                </span>
+                <span className="font-bold">
+                  {deliveryFee} {isArabic ? "جنيه" : "EGP"}
+                </span>
+              </div>
+              <div className="flex items-center justify-between text-base font-bold">
+                <span>{isArabic ? "الإجمالي النهائي:" : "Total with delivery:"}</span>
+                <span className="text-accent">{totalWithDelivery} {isArabic ? "جنيه" : "EGP"}</span>
+              </div>
+            </div>
+          )}
 
           {/* Apartment / Street Address */}
           <div>
