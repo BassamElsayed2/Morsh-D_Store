@@ -37,7 +37,7 @@ const productImagePaths = [
   "/images/IMG_9008.webp",
   "/images/IMG_9009.webp",
   "/images/IMG_9010.webp",
-  "/images/sizes2.jpeg",
+  "/images/sizes.jpeg",
 ];
 
 export const ArcadeProduct = () => {
