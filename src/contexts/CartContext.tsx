@@ -36,8 +36,8 @@ interface CartContextType {
 
 const CartContext = createContext<CartContextType | undefined>(undefined);
 
-const VALID_COUPON = "MD20";
-const COUPON_DISCOUNT = 0.2; // 20%
+const VALID_COUPON = "MD25";
+const COUPON_DISCOUNT = 0.25; // 25%
 
 export const CartProvider = ({ children }: { children: ReactNode }) => {
   const [items, setItems] = useState<CartItem[]>([]);

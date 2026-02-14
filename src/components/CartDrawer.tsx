@@ -144,8 +144,8 @@ export const CartDrawer = memo(
 
         if (isCouponApplied) {
           message += isArabic
-            ? `\n🎟️ *كوبون خصم: MD20 (-20%)*\n*الخصم: -${discountAmount} جنيه*\n*المجموع بعد الخصم: ${finalPrice} جنيه*`
-            : `\n🎟️ *Coupon: MD20 (-20%)*\n*Discount: -${discountAmount} EGP*\n*Total after discount: ${finalPrice} EGP*`;
+            ? `\n🎟️ *كوبون خصم: MD20 (-25%)*\n*الخصم: -${discountAmount} جنيه*\n*المجموع بعد الخصم: ${finalPrice} جنيه*`
+            : `\n🎟️ *Coupon: MD20 (-25%)*\n*Discount: -${discountAmount} EGP*\n*Total after discount: ${finalPrice} EGP*`;
         }
 
         message += isArabic
@@ -346,7 +346,7 @@ export const CartDrawer = memo(
                       <div className="flex items-center gap-2">
                         <CheckCircle2 className="w-4 h-4 text-green-500" />
                         <span className="text-sm font-bold text-green-500">
-                          MD20 (-20%)
+                          MD20 (-25%)
                         </span>
                       </div>
                       <Button
@@ -422,7 +422,7 @@ export const CartDrawer = memo(
                       </div>
                       <div className="flex items-center justify-between mb-2">
                         <span className="text-sm md:text-base text-green-500">
-                          {isArabic ? "الخصم (20%):" : "Discount (20%):"}
+                          {isArabic ? "الخصم (25%):" : "Discount (25%):"}
                         </span>
                         <span className="font-bold text-sm md:text-base text-green-500">
                           -{discountAmount} {isArabic ? "جنيه" : "EGP"}
