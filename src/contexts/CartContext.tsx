@@ -6,6 +6,7 @@ import {
   useMemo,
   ReactNode,
 } from "react";
+import { trackAddToCart } from "@/lib/metaPixel";
 
 export interface CartItem {
   id: string;
@@ -36,8 +37,8 @@ interface CartContextType {
 
 const CartContext = createContext<CartContextType | undefined>(undefined);
 
-const VALID_COUPON = "MD25";
-const COUPON_DISCOUNT = 0.25; // 25%
+const VALID_COUPON = "MD200";
+const COUPON_DISCOUNT_FIXED = 200; // 200 جنيه خصم ثابت
 
 export const CartProvider = ({ children }: { children: ReactNode }) => {
   const [items, setItems] = useState<CartItem[]>([]);
@@ -45,6 +46,7 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
   const [isCouponApplied, setIsCouponApplied] = useState(false);
 
   const addItem = useCallback((item: Omit<CartItem, "quantity">) => {
+    trackAddToCart([item.id], item.price, "EGP");
     setItems((prevItems) => {
       const existingItemIndex = prevItems.findIndex(
         (i) => i.id === item.id && i.size === item.size,
@@ -102,7 +104,8 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
   );
 
   const discountAmount = useMemo(
-    () => (isCouponApplied ? Math.round(totalPrice * COUPON_DISCOUNT) : 0),
+    () =>
+      isCouponApplied ? Math.min(COUPON_DISCOUNT_FIXED, totalPrice) : 0,
     [isCouponApplied, totalPrice],
   );
 

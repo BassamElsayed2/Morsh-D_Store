@@ -12,6 +12,7 @@ import { Button } from "@/components/ui/button";
 import { SizeSelector } from "./SizeSelector";
 import { LanguageSwitcher } from "./LanguageSwitcher";
 import { OptimizedImage } from "./OptimizedImage";
+import { PromoBanner } from "./PromoBanner";
 import { ShoppingCart, Sparkles, Star, Maximize2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useCart } from "@/contexts/CartContext";
@@ -171,8 +172,9 @@ export const ArcadeProduct = () => {
   return (
     <div
       ref={productRef}
-      className="min-h-screen bg-background relative overflow-hidden"
+      className="min-h-screen bg-background relative overflow-hidden pt-12 md:pt-14"
     >
+      <PromoBanner />
       {/* Decorative background elements */}
       <div className="absolute top-0 left-0 w-full h-full pointer-events-none overflow-hidden">
         <OptimizedImage

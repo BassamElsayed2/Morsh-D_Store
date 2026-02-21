@@ -26,6 +26,7 @@ import { Separator } from "@/components/ui/separator";
 import { CheckoutForm, type FormData } from "./CheckoutForm";
 import { OptimizedImage } from "./OptimizedImage";
 import { getDeliveryFee, DELIVERY_TANTA, DELIVERY_OTHER } from "@/lib/delivery";
+import { trackPurchase } from "@/lib/metaPixel";
 
 interface CartDrawerProps {
   open?: boolean;
@@ -135,7 +136,7 @@ export const CartDrawer = memo(
         });
 
         const subtotal = isCouponApplied ? finalPrice : totalPrice;
-        const deliveryFee = getDeliveryFee(shippingData.city);
+        const deliveryFee = getDeliveryFee(shippingData.city, totalItems);
         const totalWithDelivery = subtotal + deliveryFee;
 
         message += isArabic
@@ -144,16 +145,18 @@ export const CartDrawer = memo(
 
         if (isCouponApplied) {
           message += isArabic
-            ? `\n🎟️ *كوبون خصم: MD20 (-25%)*\n*الخصم: -${discountAmount} جنيه*\n*المجموع بعد الخصم: ${finalPrice} جنيه*`
-            : `\n🎟️ *Coupon: MD20 (-25%)*\n*Discount: -${discountAmount} EGP*\n*Total after discount: ${finalPrice} EGP*`;
+            ? `\n🎟️ *كوبون خصم: MD200 (-200 جنيه)*\n*الخصم: -${discountAmount} جنيه*\n*المجموع بعد الخصم: ${finalPrice} جنيه*`
+            : `\n🎟️ *Coupon: MD200 (-200 EGP)*\n*Discount: -${discountAmount} EGP*\n*Total after discount: ${finalPrice} EGP*`;
         }
 
         message += isArabic
-          ? `\n🚚 *التوصيل: ${deliveryFee} جنيه*\n💰 *الإجمالي النهائي: ${totalWithDelivery} جنيه*`
-          : `\n🚚 *Delivery: ${deliveryFee} EGP*\n💰 *Total: ${totalWithDelivery} EGP*`;
+          ? `\n🚚 *التوصيل: ${deliveryFee === 0 ? "مجاني" : `${deliveryFee} جنيه`}*\n💰 *الإجمالي النهائي: ${totalWithDelivery} جنيه*`
+          : `\n🚚 *Delivery: ${deliveryFee === 0 ? "FREE" : `${deliveryFee} EGP`}*\n💰 *Total: ${totalWithDelivery} EGP*`;
 
         const phoneNumber = "201013816187";
         const whatsappUrl = `https://wa.me/${phoneNumber}?text=${encodeURIComponent(message)}`;
+
+        trackPurchase(totalWithDelivery, "EGP");
 
         window.open(whatsappUrl, "_blank", "noopener,noreferrer");
 
@@ -346,7 +349,7 @@ export const CartDrawer = memo(
                       <div className="flex items-center gap-2">
                         <CheckCircle2 className="w-4 h-4 text-green-500" />
                         <span className="text-sm font-bold text-green-500">
-                          MD20 (-25%)
+                          MD200 (-200)
                         </span>
                       </div>
                       <Button
@@ -422,7 +425,7 @@ export const CartDrawer = memo(
                       </div>
                       <div className="flex items-center justify-between mb-2">
                         <span className="text-sm md:text-base text-green-500">
-                          {isArabic ? "الخصم (25%):" : "Discount (25%):"}
+                          {isArabic ? "الخصم (200 جنيه):" : "Discount (200 EGP):"}
                         </span>
                         <span className="font-bold text-sm md:text-base text-green-500">
                           -{discountAmount} {isArabic ? "جنيه" : "EGP"}
@@ -468,6 +471,7 @@ export const CartDrawer = memo(
         {showCheckoutForm && (
           <CheckoutForm
             cartSubtotal={isCouponApplied ? finalPrice : totalPrice}
+            totalItems={totalItems}
             onSubmit={handleCheckoutSubmit}
             onClose={handleCheckoutClose}
           />

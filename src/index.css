@@ -117,4 +117,18 @@
     @apply neon-border pixel-corners transition-[box-shadow,background-color,color,opacity,transform] duration-200;
     @apply hover:shadow-[0_0_20px_hsl(var(--neon-glow))];
   }
+
+  @keyframes promo-marquee {
+    0% {
+      transform: translateX(0);
+    }
+    100% {
+      transform: translateX(-33.333%);
+    }
+  }
+
+  .promo-marquee {
+    animation: promo-marquee 18s linear infinite;
+    will-change: transform;
+  }
 }

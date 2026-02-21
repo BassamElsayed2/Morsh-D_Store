@@ -4,9 +4,11 @@ import { Button } from "@/components/ui/button";
 import { X } from "lucide-react";
 import { getDeliveryFee } from "@/lib/delivery";
 import { EGYPT_COUNTRY, EGYPT_STATES, getCitiesByState } from "@/data/egypt";
+import { trackInitiateCheckout } from "@/lib/metaPixel";
 
 interface CheckoutFormProps {
   cartSubtotal?: number;
+  totalItems?: number;
   onSubmit: (formData: FormData) => void;
   onClose: () => void;
 }
@@ -25,7 +27,7 @@ export interface FormData {
 
 const STORAGE_KEY = "morsh-d-checkout-form";
 
-export const CheckoutForm = ({ cartSubtotal = 0, onSubmit, onClose }: CheckoutFormProps) => {
+export const CheckoutForm = ({ cartSubtotal = 0, totalItems = 0, onSubmit, onClose }: CheckoutFormProps) => {
   const { i18n } = useTranslation();
   const isArabic = i18n.language === "ar";
 
@@ -57,8 +59,8 @@ export const CheckoutForm = ({ cartSubtotal = 0, onSubmit, onClose }: CheckoutFo
   const [errors, setErrors] = useState<Partial<FormData>>({});
 
   const deliveryFee = useMemo(
-    () => getDeliveryFee(formData.city),
-    [formData.city],
+    () => (totalItems > 1 ? 0 : getDeliveryFee(formData.city, totalItems)),
+    [formData.city, totalItems],
   );
   const totalWithDelivery = cartSubtotal + deliveryFee;
 
@@ -70,6 +72,11 @@ export const CheckoutForm = ({ cartSubtotal = 0, onSubmit, onClose }: CheckoutFo
       console.error("Error saving form data to sessionStorage:", error);
     }
   }, [formData]);
+
+  // Meta Pixel: InitiateCheckout when user opens the form (starts filling data)
+  useEffect(() => {
+    trackInitiateCheckout(cartSubtotal, "EGP");
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps -- fire once when form is shown
 
   const handleInputChange = useCallback(
     (field: keyof FormData, value: string) => {
@@ -340,8 +347,12 @@ export const CheckoutForm = ({ cartSubtotal = 0, onSubmit, onClose }: CheckoutFo
                 <span className="text-muted-foreground">
                   {isArabic ? "سعر التوصيل:" : "Delivery:"}
                 </span>
-                <span className="font-bold">
-                  {deliveryFee} {isArabic ? "جنيه" : "EGP"}
+                <span className="font-bold text-green-500">
+                  {deliveryFee === 0
+                    ? isArabic
+                      ? "مجاني"
+                      : "FREE"
+                    : `${deliveryFee} ${isArabic ? "جنيه" : "EGP"}`}
                 </span>
               </div>
               <div className="flex items-center justify-between text-base font-bold">
