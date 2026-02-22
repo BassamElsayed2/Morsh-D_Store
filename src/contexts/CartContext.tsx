@@ -38,7 +38,7 @@ interface CartContextType {
 const CartContext = createContext<CartContextType | undefined>(undefined);
 
 const VALID_COUPON = "MD200";
-const COUPON_DISCOUNT_FIXED = 200; // 200 جنيه خصم ثابت
+const COUPON_DISCOUNT_PER_ITEM = 200; // 200 جنيه خصم على كل قطعة
 
 export const CartProvider = ({ children }: { children: ReactNode }) => {
   const [items, setItems] = useState<CartItem[]>([]);
@@ -105,8 +105,10 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
 
   const discountAmount = useMemo(
     () =>
-      isCouponApplied ? Math.min(COUPON_DISCOUNT_FIXED, totalPrice) : 0,
-    [isCouponApplied, totalPrice],
+      isCouponApplied
+        ? Math.min(totalItems * COUPON_DISCOUNT_PER_ITEM, totalPrice)
+        : 0,
+    [isCouponApplied, totalItems, totalPrice],
   );
 
   const finalPrice = useMemo(

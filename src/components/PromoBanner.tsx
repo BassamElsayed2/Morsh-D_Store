@@ -4,8 +4,11 @@ export const PromoBanner = () => {
   const { i18n } = useTranslation();
   const isArabic = i18n.language === "ar";
   const text = isArabic
-    ? "🛒 اشتري 2 و خد الشحن مجاني 🛒"
-    : "🛒 Buy 2 and get FREE shipping 🛒";
+    ? "🛒 اشتري 2 و خد الشحن مجاني "
+    : "🛒 Buy 2 and get FREE shipping ";
+  const textTwo = isArabic
+    ? "📢استخدم كود MD200   "
+    : "📢 Use code MD200 for  discount ";
 
   return (
     <div
@@ -18,13 +21,13 @@ export const PromoBanner = () => {
           {text}
         </span>
         <span className="inline-block px-8" aria-hidden>
-          {text}
+          {textTwo}
         </span>
         <span className="inline-block px-8" aria-hidden>
           {text}
         </span>
         <span className="inline-block px-8" aria-hidden>
-          {text}
+          {textTwo}
         </span>
       </div>
     </div>
