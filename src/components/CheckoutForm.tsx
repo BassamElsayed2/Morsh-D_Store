@@ -1,7 +1,6 @@
 import { useState, useCallback, useEffect, useMemo } from "react";
 import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
-import { X } from "lucide-react";
 import { getDeliveryFee } from "@/lib/delivery";
 import { EGYPT_COUNTRY, EGYPT_STATES, getCitiesByState } from "@/data/egypt";
 import { trackInitiateCheckout } from "@/lib/metaPixel";
@@ -10,7 +9,6 @@ interface CheckoutFormProps {
   cartSubtotal?: number;
   totalItems?: number;
   onSubmit: (formData: FormData) => void;
-  onClose: () => void;
 }
 
 export interface FormData {
@@ -27,7 +25,7 @@ export interface FormData {
 
 const STORAGE_KEY = "morsh-d-checkout-form";
 
-export const CheckoutForm = ({ cartSubtotal = 0, totalItems = 0, onSubmit, onClose }: CheckoutFormProps) => {
+export const CheckoutForm = ({ cartSubtotal = 0, totalItems = 0, onSubmit }: CheckoutFormProps) => {
   const { i18n } = useTranslation();
   const isArabic = i18n.language === "ar";
 
@@ -167,32 +165,21 @@ export const CheckoutForm = ({ cartSubtotal = 0, totalItems = 0, onSubmit, onClo
   const hasSavedData = formData.firstName || formData.lastName || formData.phone;
 
   return (
-    <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
-      <div className="bg-background w-full max-w-2xl max-h-[90vh] overflow-y-auto rounded-lg neon-border pixel-corners">
-        {/* Header */}
-        <div className="sticky top-0 bg-background border-b p-4 flex items-center justify-between z-10">
-          <div className="flex-1">
-            <h2 className="text-xl md:text-2xl font-bold neon-glow">
-              {isArabic ? "📦 معلومات الشحن" : "📦 Shipping Information"}
-            </h2>
-            {hasSavedData && (
-              <p className="text-xs text-muted-foreground mt-1">
-                {isArabic ? "💾 البيانات محفوظة تلقائياً" : "💾 Data saved automatically"}
-              </p>
-            )}
-          </div>
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={onClose}
-            className="hover:bg-destructive/10 hover:text-destructive"
-          >
-            <X className="w-5 h-5" />
-          </Button>
-        </div>
+    <div className="neon-border pixel-corners bg-card/50 backdrop-blur-sm rounded-lg">
+      {/* Header */}
+      <div className="bg-background/80 border-b p-4 rounded-t-lg">
+        <h2 className="text-xl md:text-2xl font-bold neon-glow">
+          {isArabic ? "📦 معلومات الشحن" : "📦 Shipping Information"}
+        </h2>
+        {hasSavedData && (
+          <p className="text-xs text-muted-foreground mt-1">
+            {isArabic ? "💾 البيانات محفوظة تلقائياً" : "💾 Data saved automatically"}
+          </p>
+        )}
+      </div>
 
-        {/* Form */}
-        <form onSubmit={handleSubmit} className="p-4 md:p-6 space-y-4">
+      {/* Form */}
+      <form onSubmit={handleSubmit} className="p-4 md:p-6 space-y-4">
           {/* First Name & Last Name */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
@@ -478,25 +465,14 @@ export const CheckoutForm = ({ cartSubtotal = 0, totalItems = 0, onSubmit, onClo
                 {isArabic ? "🗑️ مسح البيانات المحفوظة" : "🗑️ Clear Saved Data"}
               </Button>
             )}
-            <div className="flex flex-col sm:flex-row gap-3">
-              <Button
-                type="button"
-                variant="outline"
-                onClick={onClose}
-                className="flex-1 pixel-corners"
-              >
-                {isArabic ? "إلغاء" : "Cancel"}
-              </Button>
-              <Button
-                type="submit"
-                className="flex-1 arcade-button bg-secondary text-secondary-foreground hover:bg-secondary/90 pixel-corners"
-              >
-                {isArabic ? "تأكيد وإرسال الطلب" : "Confirm & Send Order"}
-              </Button>
-            </div>
+            <Button
+              type="submit"
+              className="w-full arcade-button bg-secondary text-secondary-foreground hover:bg-secondary/90 pixel-corners py-4 text-lg font-bold"
+            >
+              {isArabic ? "✅ تأكيد وإرسال الطلب عبر واتساب" : "✅ Confirm & Send Order via WhatsApp"}
+            </Button>
           </div>
         </form>
-      </div>
     </div>
   );
 };
