@@ -16,7 +16,6 @@ export const PromoBanner = () => {
       aria-live="polite"
     >
       <div className="promo-marquee flex whitespace-nowrap">
-        <span className="inline-block px-8">{text}</span>
         <span className="inline-block px-8" aria-hidden>
           {text}
         </span>
@@ -28,6 +27,9 @@ export const PromoBanner = () => {
         </span>
         <span className="inline-block px-8" aria-hidden>
           {textTwo}
+        </span>
+        <span className="inline-block px-8" aria-hidden>
+          {text}
         </span>
       </div>
     </div>

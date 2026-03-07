@@ -4,7 +4,6 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { CartProvider } from "@/contexts/CartContext";
 import { initMetaPixel } from "@/lib/metaPixel";
 import Index from "./pages/Index";
-import { initClarity } from "./components/clarity";
 
 // Lazy-load the 404 page — rarely visited, no need in the critical bundle
 const NotFound = lazy(() => import("./pages/NotFound"));
@@ -12,13 +11,6 @@ const NotFound = lazy(() => import("./pages/NotFound"));
 const App = () => {
   useEffect(() => {
     initMetaPixel();
-  }, []);
-
-  useEffect(() => {
-    const clarityId = import.meta.env.VITE_CLARITY_ID;
-    if (clarityId) {
-      initClarity(clarityId);
-    }
   }, []);
 
   return (
