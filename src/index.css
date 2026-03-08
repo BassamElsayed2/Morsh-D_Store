@@ -86,13 +86,16 @@
 
 @layer utilities {
   .neon-glow {
-    text-shadow: 0 0 10px hsl(var(--neon-glow)), 0 0 20px hsl(var(--neon-glow)),
+    text-shadow:
+      0 0 10px hsl(var(--neon-glow)),
+      0 0 20px hsl(var(--neon-glow)),
       0 0 30px hsl(var(--neon-glow));
   }
 
   .neon-border {
     border: 2px solid hsl(var(--arcade-border));
-    box-shadow: 0 0 10px hsl(var(--neon-glow) / 0.5),
+    box-shadow:
+      0 0 10px hsl(var(--neon-glow) / 0.5),
       inset 0 0 10px hsl(var(--neon-glow) / 0.2);
   }
 
@@ -123,12 +126,13 @@
       transform: translateX(0);
     }
     100% {
-      transform: translateX(-33.333%);
+      transform: translateX(-50%);
     }
   }
 
   .promo-marquee {
-    animation: promo-marquee 18s linear infinite;
+    animation: promo-marquee 12s linear infinite;
     will-change: transform;
+    -webkit-animation: promo-marquee 12s linear infinite;
   }
 }
