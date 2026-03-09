@@ -131,8 +131,8 @@
   }
 
   .promo-marquee {
-    animation: promo-marquee 12s linear infinite;
+    animation: promo-marquee 13s linear infinite;
     will-change: transform;
-    -webkit-animation: promo-marquee 12s linear infinite;
+    -webkit-animation: promo-marquee 13s linear infinite;
   }
 }
